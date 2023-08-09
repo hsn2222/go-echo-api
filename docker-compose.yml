@@ -1,0 +1,37 @@
+version: '3' # composeファイルのバージョン
+services:
+  server: # サービス名
+    container_name: go
+    build: # ビルドに使うDockerファイルのパス
+      context: .
+      dockerfile: ./Dockerfile
+    ports:
+      - 8080:8080
+    volumes: # マウントディレクトリ
+      - ./app:/app
+    working_dir: /app
+    tty: true # コンテナの永続化
+    networks:
+      - go_echo_api
+    depends_on:
+      - db
+    environment:
+      - TZ=Asia/Tokyo
+  db:
+    image: postgres:15.1-alpine
+    container_name: postgres
+    ports:
+      - 5432:5432
+    volumes:
+      - ./postgres/data:/var/lib/postgresql/data
+      - ./postgres/init:/docker-entrypoint-initdb.d
+    networks:
+      - go_echo_api
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: test_db
+      TZ: Asia/Tokyo
+networks:
+  go_echo_api:
+    driver: bridge
